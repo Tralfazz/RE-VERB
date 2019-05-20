@@ -10,4 +10,5 @@ server/speech_diarization/model/speech_id_checkpoint
 server/rest/upload/*
 client/basic-cli/__pycache__/
 client/website/node_modules
+client/website/package-lock.json
 dump.rdb
