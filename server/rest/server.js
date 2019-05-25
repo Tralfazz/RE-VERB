@@ -94,8 +94,8 @@ app.get('/' , (req , res, next) => {
 
 app.use(["/" , "/upload"] , (req, res, next) => {
     subscriber.on('message', (channel, msg) => {
-        console.log("sending message: ", msg, "to ", req.path);
-        res.end(channel + " : " + msg);
+        console.log("sending message to: ", req.ip);
+        res.end(msg);
         next();
     })
 });

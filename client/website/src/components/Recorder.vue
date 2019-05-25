@@ -39,6 +39,7 @@ export default {
         this.rc.pause()
         this.response = 'Finished recording'
         this.isRecording = false;
+        this.recordTime = 0;
 
         const audiofile = this.rc.getRecord({
           encodeTo: ENCODE_TYPE.WAV
