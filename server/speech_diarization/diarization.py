@@ -87,50 +87,50 @@ def get_diarization(filename):
         timestamps of each speaker occurance in the audio file
         :type: dict
     '''
+    try:
+        net = network.SpeechEmbedder()
+        net.load_state_dict(torch.load(hp.model.model_path))
+        net.eval()
 
-    net = network.SpeechEmbedder()
-    net.load_state_dict(torch.load(hp.model.model_path))
-    net.eval()
+        print(f'Loaded model from {hp.model.model_path}!') #{hp.model.model_path}
 
-    print(f'Loaded model from {hp.model.model_path}!') #{hp.model.model_path}
+        embeddings = []
+        filter_banks, voice_timestamps = prepeare_file(filename)
+        #os.remove(f"{filename}.tmp")
 
-    embeddings = []
-    filter_banks, voice_timestamps = prepeare_file(filename)
-    #os.remove(f"{filename}.tmp")
+        print('Extracted filerbank and vad time stamps')
 
-    print('Extracted filerbank and vad time stamps')
+        clusterer = spectralcluster.SpectralClusterer(min_clusters=2, max_clusters=100, p_percentile=0.95, gaussian_blur_sigma=1)
 
-    clusterer = spectralcluster.SpectralClusterer(min_clusters=2, max_clusters=100, p_percentile=0.95, gaussian_blur_sigma=1)
+        print('Initiated clusterer')
 
-    print('Initiated clusterer')
-    
-    for utterance in filter_banks:
-        utterance = torch.Tensor(utterance).unsqueeze_(0).unsqueeze_(0)
-        embeddings.append(net(utterance))
-    
-    embeddings = torch.squeeze(torch.stack(embeddings))
-    
-    print('Got result from network!')
+        for utterance in filter_banks:
+            utterance = torch.Tensor(utterance).unsqueeze_(0).unsqueeze_(0)
+            embeddings.append(net(utterance))
 
-    embeddings = embeddings.detach().numpy()
-    print('Converted to numpy')
-    
-    for i in range(embeddings.shape[0]):
-        for j in range(embeddings.shape[1]):
-            if np.isnan(embeddings[i,j]):
-                print(f"Nan: ({i},{j})")
-            elif np.isinf(embeddings[i,j]):
-                print(f"Inf: ({i},{j})")
+        embeddings = torch.squeeze(torch.stack(embeddings))
 
-    results = clusterer.predict(embeddings)
-    print(f'Predicted results from clusterer {results}')
+        print('Got result from network!')
 
-    diarization_res = get_timestamps(voice_timestamps, results)
-    diarization_res = {str(x):y for x,y in diarization_res.items()}
+        embeddings = embeddings.detach().numpy()
+        print('Converted to numpy')
+
+        for i in range(embeddings.shape[0]):
+            for j in range(embeddings.shape[1]):
+                if np.isnan(embeddings[i,j]):
+                    print(f"Nan: ({i},{j})")
+                elif np.isinf(embeddings[i,j]):
+                    print(f"Inf: ({i},{j})")
+
+        results = clusterer.predict(embeddings)
+        print(f'Predicted results from clusterer {results}')
+
+        diarization_res = get_timestamps(voice_timestamps, results)
+        diarization_res = {str(x):y for x,y in diarization_res.items()}
 
 
-    return json.dumps(diarization_res, indent=2)
-
-#if __name__ == "__main__":
-#    wow = get_diarization("../../client/basic-cli/audio/record.wav")
-#    print(wow)
+        return json.dumps(diarization_res, indent=2)
+    except:
+        return ('''Could not process file. 
+        Make sure that the file is uncorrupted, in the right format
+        or does not contain empty recording''')

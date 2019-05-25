@@ -22,7 +22,7 @@ def ServerMain():
                 if command[0] == "param":
                     print("sending hello " + command[1])
                     r.publish("diarization_node" , "hello " + command[1])
-                elif command[0] == "file":
+                elif command[0] == "timestamps":
                     print(f"Got file name: {command[1]}")
                     print(os.listdir())
                     diarization_results = get_diarization(command[1])

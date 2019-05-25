@@ -57,16 +57,10 @@ app.post('/upload' , upload.single('file') , (req,res, next) => {
         if (err) throw err;
         console.log(data);
         
-        publisher.publish("diarization_py", "file:" + req.file.path);
+        publisher.publish("diarization_py", "timestamps:" + req.file.path);
     })
 
     next();
-})
-
-
-app.get("/recordings/:id/text", (req,res) => {
-    //TODO wit.ai speech-to-text
-    res.send("wowowoww");
 })
 
 
@@ -95,7 +89,7 @@ app.get('/' , (req , res, next) => {
 app.use(["/" , "/upload"] , (req, res, next) => {
     subscriber.on('message', (channel, msg) => {
         console.log("sending message: ", msg, "to ", req.path);
-        res.end(channel + " : " + msg);
+        res.end(msg);
         next();
     })
 });

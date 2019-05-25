@@ -25,39 +25,40 @@ export default {
     methods: {
       async startRecord() {
         try {
-          await this.rc.start()
+          await this.rc.start();
           this.isRecording = true;
 
-          setInterval(() => this.recordTime += 1 , 1000)
+          setInterval(() => this.recordTime += 1 , 1000);
         }
         catch(e) {
-          this.response = e
+          this.response = e;
         }        
       },
 
       async stopRecord() {
-        this.rc.pause()
-        this.response = 'Finished recording'
+        this.rc.pause();
+        this.response = 'Finished recording';
         this.isRecording = false;
+        this.recordTime = 0;
 
         const audiofile = this.rc.getRecord({
           encodeTo: ENCODE_TYPE.WAV
         })
 
-        let data = new FormData()
-        data.append('file', audiofile)
+        let data = new FormData();
+        data.append('file', audiofile);
 
-        this.response = 'sending data'
+        this.response = 'sending data';
         try {
           let response = await fetch('http://localhost:1337/upload', {
             method: 'POST',
             body: data
-          })
+          });
 
-          this.response = await response.text()
+          this.response = await response.text();
         }
         catch(e) {
-          this.response = e
+          this.response = e;
         }
       }    
     }
